@@ -1,10 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Palworld Web Application
 
-try vibe code with Trae IDE
+This is the frontend for the Palworld application, built with [Next.js](https://nextjs.org). It provides a web interface for managing Palworld creatures (Pals) and their passive skills.
+
+## Features
+
+- Add new Pals with their details and passive skills
+- View stored Pals with filtering and pagination
+- Manage passive skills and combinations
+- Responsive design with modern UI
+
+## Backend Connection
+
+This frontend connects to the `palworld_app` Go backend. Make sure to configure the backend URL properly:
+
+- **Development**: `http://localhost:8080`
+- **Production**: Set `NEXT_PUBLIC_BACKEND_API_URL` to your deployed backend URL
+
+See the [Deployment Guide](../../DEPLOYMENT.md) for detailed setup instructions.
+
+## Environment Configuration
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Backend API URL
+BACKEND_API_URL=http://localhost:8080
+NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8080
+```
+
+For production deployment, update these URLs to point to your deployed backend.
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
