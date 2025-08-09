@@ -176,13 +176,12 @@ export default function StoredPals() {
   // Fetch pal species options from API
   const fetchPalSpecies = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080';
-      const response = await fetch(`${backendUrl}/options/pal-species`);
+      const response = await fetch('/api/options/pal-species');
       if (!response.ok) {
         throw new Error(`Failed to fetch pal species options: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      setPalSpecies(data.message || []);
+      setPalSpecies(data || []);
     } catch (error) {
       console.error('Error fetching pal species options:', error);
       // Set empty array to prevent UI issues
@@ -193,13 +192,12 @@ export default function StoredPals() {
   // Fetch passive skills options from API
   const fetchPassiveSkills = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080';
-      const response = await fetch(`${backendUrl}/options/passive-skills`);
+      const response = await fetch('/api/options/passive-skills');
       if (!response.ok) {
         throw new Error(`Failed to fetch passive skills options: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      setPassiveSkills(data.message || []);
+      setPassiveSkills(data || []);
     } catch (error) {
       console.error('Error fetching passive skills options:', error);
       // Set empty array to prevent UI issues

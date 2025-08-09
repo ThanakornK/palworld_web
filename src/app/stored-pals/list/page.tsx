@@ -32,13 +32,12 @@ export default function PalList() {
   useEffect(() => {
     const fetchPals = async () => {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080';
-        const response = await fetch(`${backendUrl}/store`);
+        const response = await fetch('/api/pals');
         if (!response.ok) {
           throw new Error('Failed to fetch pals');
         }
         const data = await response.json();
-        setPals(data.message || []);
+        setPals(data || []);
       } catch (error) {
         console.error('Error fetching pals:', error);
         setError('Failed to load pals. Please try again later.');
@@ -49,13 +48,12 @@ export default function PalList() {
 
     const fetchPassiveSkills = async () => {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8080';
-        const response = await fetch(`${backendUrl}/options/passive-skills`);
+        const response = await fetch('/api/options/passive-skills');
         if (!response.ok) {
           throw new Error('Failed to fetch passive skills');
         }
         const data = await response.json();
-        const skills = data.message || [];
+        const skills = data || [];
         const uniqueSkills = [...new Set(skills.map((skill: any) => skill.name))] as string[];
         setPassiveSkills(uniqueSkills);
       } catch (error) {
@@ -142,7 +140,7 @@ export default function PalList() {
     if (!palToDelete) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/remove-pal`, {
+      const response = await fetch('/api/remove-pal', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
