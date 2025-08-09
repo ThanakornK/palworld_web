@@ -26,6 +26,8 @@ export default function PalList() {
   const [passiveSkills, setPassiveSkills] = useState<string[]>([]);
   const [filteredPassiveSkills, setFilteredPassiveSkills] = useState<string[]>([]);
   const [showSkillDropdowns, setShowSkillDropdowns] = useState<boolean[]>([false]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [palToDelete, setPalToDelete] = useState<Pal | null>(null);
 
   useEffect(() => {
     const fetchPals = async () => {
@@ -127,6 +129,48 @@ export default function PalList() {
     setSearchTerm('');
     setSelectedPassiveSkills(['']);
     setShowSkillDropdowns([false]);
+  };
+
+  // Show delete confirmation modal
+  const showDeleteConfirmation = (pal: Pal) => {
+    setPalToDelete(pal);
+    setShowDeleteModal(true);
+  };
+
+  // Delete pal function
+  const deletePal = async () => {
+    if (!palToDelete) return;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/remove-pal`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: palToDelete.name,
+          id: palToDelete.id
+        })
+      });
+
+      if (response.ok) {
+        // Remove the pal from the local state
+        setPals(pals.filter(p => p.id !== palToDelete.id));
+        setShowDeleteModal(false);
+        setPalToDelete(null);
+      } else {
+        alert('Failed to delete pal. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error deleting pal:', error);
+      alert('Error deleting pal. Please try again.');
+    }
+  };
+
+  // Cancel delete
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setPalToDelete(null);
   };
 
   return (
@@ -306,9 +350,20 @@ export default function PalList() {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                         {filteredPals.map((pal) => (
-                          <div key={`${pal.name}-${pal.id}`} className="bg-blue-900/20 border border-blue-600 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-blue-900/50 transition-all">
+                          <div key={`${pal.name}-${pal.id}`} className="bg-blue-900/20 border border-blue-600 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-blue-900/50 transition-all relative">
                             <div className="p-4">
-                              <div className="flex items-center justify-between mb-4">
+                              {/* Delete button */}
+                              <button
+                                 onClick={() => showDeleteConfirmation(pal)}
+                                 className="absolute top-2 right-2 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center transition-colors z-10"
+                                 title={`Delete ${pal.name}`}
+                               >
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                 </svg>
+                               </button>
+                              
+                              <div className="flex items-center justify-between mb-4 pr-8">
                                 <h3 className="text-xl font-bold text-blue-200">{pal.name}</h3>
                                 <span className={`px-3 py-1 rounded-full text-sm ${
                                   pal.gender === 'm' || pal.gender === 'male' || pal.gender === 'Male' 
@@ -357,6 +412,44 @@ export default function PalList() {
             </>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && palToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">Delete Pal</h3>
+                  <p className="text-gray-300">This action cannot be undone.</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-200 mb-6">
+                Are you sure you want to delete <span className="font-semibold text-blue-300">{palToDelete.name}</span>?
+              </p>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={deletePal}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
