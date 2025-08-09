@@ -20,7 +20,7 @@ export default function StoredPals() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
-    gender: 'Male',
+    gender: 'm',
     passive_skills: ['']
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -220,8 +220,8 @@ export default function StoredPals() {
         passive_skills: filteredSkills
       };
 
-      // API endpoint would be replaced with the actual endpoint
-      const response = await fetch('/api/pals', {
+      // Call the correct add-pal endpoint
+      const response = await fetch('/api/add-pal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -234,7 +234,7 @@ export default function StoredPals() {
         // Reset form after successful submission
         setFormData({
           name: '',
-          gender: 'Male',
+          gender: 'm',
           passive_skills: ['']
         });
         // Refresh the pals list
@@ -323,8 +323,8 @@ export default function StoredPals() {
               onChange={handleInputChange}
               className="w-full bg-gray-800 border border-blue-500 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="m">Male</option>
+              <option value="f">Female</option>
             </select>
           </div>
 

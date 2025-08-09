@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { firebaseService } from '@/lib/firebase-service';
 
+// Handle OPTIONS request for CORS
+export async function OPTIONS() {
+  const response = new NextResponse(null, { status: 200 });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return response;
+}
+
 export async function POST(request: NextRequest) {
   try {
     if (!firebaseService.isInitialized()) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Firebase not initialized. Please initialize Firebase first.' },
         { status: 503 }
       );
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     }
     
     const body = await request.json();
@@ -19,16 +35,23 @@ export async function POST(request: NextRequest) {
       // Use uploaded data
       data = body.data;
     } else {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Invalid source or missing data. Only "upload" source with data is supported.' },
         { status: 400 }
       );
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     }
     
     // Import data to Firebase
     const results = await firebaseService.importData(data);
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: 'Data imported successfully',
       results: results,
       imported: {
@@ -40,22 +63,43 @@ export async function POST(request: NextRequest) {
       source: 'firebase'
     });
     
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
+    
   } catch (error) {
     console.error('Error importing data to Firebase:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Failed to import data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   }
 }
 
 export async function GET() {
   try {
     if (!firebaseService.isInitialized()) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Firebase not initialized' },
         { status: 503 }
       );
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     }
     
     // Get current data counts from Firebase
@@ -66,7 +110,7 @@ export async function GET() {
       firebaseService.getStoredPals()
     ]);
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: 'Firebase data status',
       counts: {
         pals: pals?.length || 0,
@@ -77,11 +121,25 @@ export async function GET() {
       source: 'firebase'
     });
     
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
+    
   } catch (error) {
     console.error('Error getting Firebase data status:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Failed to get data status' },
       { status: 500 }
     );
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   }
 }

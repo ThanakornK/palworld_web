@@ -8,6 +8,15 @@ import {
 import { firebaseService } from '@/lib/firebase-service';
 import { AddPalRequest } from '@/types/palworld';
 
+// Handle OPTIONS request for CORS
+export async function OPTIONS() {
+  const response = new NextResponse(null, { status: 200 });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return response;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: AddPalRequest = await request.json();
@@ -15,18 +24,32 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!name || !gender || !Array.isArray(passive_skills)) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Missing required fields: name, gender, passive_skills' },
         { status: 400 }
       );
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     }
 
     // Check if Firebase is initialized
     if (!firebaseService.isInitialized()) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Firebase not initialized. Please initialize Firebase first.' },
         { status: 503 }
       );
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     }
 
     try {
@@ -38,27 +61,48 @@ export async function POST(request: NextRequest) {
 
       // Validate pal name
       if (!validatePalName(pals, name)) {
-        return NextResponse.json(
+        const response = NextResponse.json(
           { error: `Invalid pal name: ${name}` },
           { status: 400 }
         );
+        
+        // Add CORS headers
+        response.headers.set('Access-Control-Allow-Origin', '*');
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        
+        return response;
       }
 
       // Validate gender
       if (!validateGender(gender)) {
-        return NextResponse.json(
-          { error: `Invalid gender: ${gender}. Must be 'male' or 'female'` },
+        const response = NextResponse.json(
+          { error: `Invalid gender: ${gender}. Must be 'm' or 'f'` },
           { status: 400 }
         );
+        
+        // Add CORS headers
+        response.headers.set('Access-Control-Allow-Origin', '*');
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        
+        return response;
       }
 
       // Validate passive skills
       const skillValidation = validatePassiveSkills(passiveSkills, passive_skills);
       if (!skillValidation.valid) {
-        return NextResponse.json(
+        const response = NextResponse.json(
           { error: `Invalid passive skill: ${skillValidation.invalidSkill}` },
           { status: 400 }
         );
+        
+        // Add CORS headers
+        response.headers.set('Access-Control-Allow-Origin', '*');
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        
+        return response;
       }
 
       // Add pal to store
@@ -68,7 +112,7 @@ export async function POST(request: NextRequest) {
       await firebaseService.setStoredPals(updatedStoredPals);
       console.log('Pal added to Firebase successfully');
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         message: 'Pal added successfully',
         data: {
@@ -77,18 +121,39 @@ export async function POST(request: NextRequest) {
           passive_skills
         }
       });
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     } catch (firebaseError) {
       console.error('Firebase error:', firebaseError);
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Firebase operation failed' },
         { status: 500 }
       );
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return response;
     }
   } catch (error) {
     console.error('Error adding pal:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   }
 }
