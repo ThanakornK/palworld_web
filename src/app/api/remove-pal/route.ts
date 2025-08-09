@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { removePalFromStore } from '@/lib/palworld-utils';
+import { firebaseService } from '@/lib/firebase-service';
 
-// Type definition for remove pal request
 type RemovePalRequest = {
   name: string;
   id: number;
@@ -8,49 +9,73 @@ type RemovePalRequest = {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Parse the request body
     const body: RemovePalRequest = await request.json();
+    const { name, id } = body;
 
-    // Validate the request
-    if (!body.name || !body.id) {
+    // Validate input
+    if (!name || !id) {
       return NextResponse.json(
-        { message: 'Name and id are required' },
+        { error: 'Missing required fields: name, id' },
         { status: 400 }
       );
     }
 
-    // Make a request to the backend API
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-    
-    const response = await fetch(`${backendUrl}/remove-pal`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: body.name,
-        id: body.id
-      }),
-    });
-
-    // Handle the response from the backend
-    if (!response.ok) {
-      const errorData = await response.json();
+    // Check if Firebase is initialized
+    if (!firebaseService.isInitialized()) {
       return NextResponse.json(
-        { message: errorData.message || 'Failed to remove pal' },
-        { status: response.status }
+        { error: 'Firebase not initialized. Please initialize Firebase first.' },
+        { status: 503 }
       );
     }
 
-    // Return success response
-    return NextResponse.json(
-      { message: 'Pal removed successfully' },
-      { status: 200 }
-    );
+    try {
+      // Load stored pals from Firebase
+      const storedPals = await firebaseService.getStoredPals();
+
+      // Verify the pal exists before attempting removal
+      const species = storedPals.find(s => s.name.toLowerCase() === name.toLowerCase());
+      if (!species) {
+        return NextResponse.json(
+          { error: `Pal species '${name}' not found` },
+          { status: 404 }
+        );
+      }
+      
+      const pal = species.storedPals.find(p => p.id === id);
+      if (!pal) {
+        return NextResponse.json(
+          { error: `Pal with id ${id} not found in species '${name}'` },
+          { status: 404 }
+        );
+      }
+
+      // Remove pal from store
+      const updatedStoredPals = removePalFromStore(storedPals, name, id);
+
+      // Save to Firebase
+      await firebaseService.setStoredPals(updatedStoredPals);
+      console.log('Pal removed from Firebase successfully');
+
+      return NextResponse.json({
+        success: true,
+        message: 'Pal removed successfully',
+        data: {
+          name,
+          id
+        },
+        source: 'firebase'
+      });
+    } catch (firebaseError) {
+      console.error('Firebase error:', firebaseError);
+      return NextResponse.json(
+        { error: 'Firebase operation failed' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Error removing pal:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

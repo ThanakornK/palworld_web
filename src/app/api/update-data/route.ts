@@ -1,38 +1,41 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { firebaseService } from '@/lib/firebase-service';
 
-export async function GET() {
+export async function POST() {
   try {
-    // Make a request to the backend API
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
+    // Note: In the Go backend, this endpoint triggered web scraping
+    // For the frontend implementation, we'll focus on Firebase data management
+    // Web scraping functionality would need to be implemented separately
+    // or handled through external services due to CORS and server-side limitations
     
-    const response = await fetch(`${backendUrl}/update-data`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // Handle the response from the backend
-    if (!response.ok) {
-      const errorData = await response.json();
+    if (!firebaseService.isInitialized()) {
       return NextResponse.json(
-        { message: errorData.error || 'Failed to update data' },
-        { status: response.status }
+        { error: 'Firebase not initialized. Cannot update data.' },
+        { status: 503 }
       );
     }
-
-    const data = await response.json();
     
-    // Return success response
-    return NextResponse.json(
-      { message: data.message || 'Data updated successfully' },
-      { status: 200 }
-    );
+    // This is a placeholder for data update functionality
+    // In a real implementation, you might:
+    // 1. Trigger external scraping services
+    // 2. Import data from uploaded files
+    // 3. Sync with external APIs
+    
+    return NextResponse.json({
+      message: 'Data update endpoint ready. Implement scraping logic as needed.',
+      note: 'Web scraping moved to external services due to frontend limitations'
+    });
+    
   } catch (error) {
-    console.error('Error updating data:', error);
+    console.error('Error in update-data:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { error: 'Failed to update data' },
       { status: 500 }
     );
   }
+}
+
+// Keep GET for backward compatibility
+export async function GET() {
+  return POST();
 }

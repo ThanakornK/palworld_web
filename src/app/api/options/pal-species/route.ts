@@ -1,30 +1,47 @@
 import { NextResponse } from 'next/server';
+import { getPalSpeciesNames } from '@/lib/palworld-utils';
+import { firebaseService } from '@/lib/firebase-service';
 
 export async function GET() {
   try {
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-    
-    const response = await fetch(`${backendUrl}/options/pal-species`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { message: 'Failed to fetch pal species' },
-        { status: response.status }
-      );
+    // Try Firebase first
+    if (firebaseService.isInitialized()) {
+      try {
+        const pals = await firebaseService.getPals();
+        
+        // Extract species names using utility function
+        const speciesNames = getPalSpeciesNames(pals);
+        
+        return NextResponse.json({
+          success: true,
+          data: speciesNames,
+          source: 'firebase'
+        });
+      } catch (firebaseError) {
+        console.error('Firebase error:', firebaseError);
+        return NextResponse.json({
+          success: false,
+          error: 'Firebase not available',
+          data: [],
+          source: 'firebase_error'
+        }, { status: 503 });
+      }
     }
-
-    const data = await response.json();
-    return NextResponse.json(data.message || []);
+    
+    // Firebase not initialized
+    return NextResponse.json({
+      success: false,
+      error: 'Firebase not initialized. Please initialize Firebase first.',
+      data: [],
+      source: 'no_firebase'
+    }, { status: 503 });
   } catch (error) {
     console.error('Error fetching pal species:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error',
+      data: [],
+      source: 'error'
+    }, { status: 500 });
   }
 }

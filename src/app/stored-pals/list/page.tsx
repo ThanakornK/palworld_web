@@ -37,7 +37,7 @@ export default function PalList() {
           throw new Error('Failed to fetch pals');
         }
         const data = await response.json();
-        setPals(data || []);
+        setPals(data.data || []);
       } catch (error) {
         console.error('Error fetching pals:', error);
         setError('Failed to load pals. Please try again later.');
@@ -53,7 +53,7 @@ export default function PalList() {
           throw new Error('Failed to fetch passive skills');
         }
         const data = await response.json();
-        const skills = data || [];
+        const skills = data.data || [];
         const uniqueSkills = [...new Set(skills.map((skill: any) => skill.name))] as string[];
         setPassiveSkills(uniqueSkills);
       } catch (error) {

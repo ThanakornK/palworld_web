@@ -164,7 +164,7 @@ export default function StoredPals() {
         throw new Error('Failed to fetch pals');
       }
       const data = await response.json();
-      setPals(data);
+      setPals(data.data || []);
     } catch (error) {
       console.error('Error fetching pals:', error);
       setError('Failed to load pals. Please try again later.');
@@ -181,7 +181,7 @@ export default function StoredPals() {
         throw new Error(`Failed to fetch pal species options: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      setPalSpecies(data || []);
+      setPalSpecies(data.data || []);
     } catch (error) {
       console.error('Error fetching pal species options:', error);
       // Set empty array to prevent UI issues
@@ -197,7 +197,7 @@ export default function StoredPals() {
         throw new Error(`Failed to fetch passive skills options: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      setPassiveSkills(data || []);
+      setPassiveSkills(data.data || []);
     } catch (error) {
       console.error('Error fetching passive skills options:', error);
       // Set empty array to prevent UI issues
